@@ -45,7 +45,7 @@ class LinearClassifier(object):
 
         y_pred, class_scores = None, None
         # ====== YOUR CODE: ======
-        class_scores = x*self.weights
+        class_scores = x @ self.weights
         _, y_pred = torch.max(class_scores, dim=1)
         # ========================
 
