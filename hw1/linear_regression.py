@@ -8,6 +8,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
+from Part3_LinearRegression import y_pred
+
 
 class LinearRegressor(BaseEstimator, RegressorMixin):
     """
@@ -30,9 +32,9 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         # TODO: Calculate the model prediction, y_pred
 
-        y_pred = None
+        y_pred = X @ self.weights_
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+
         # ========================
 
         return y_pred
@@ -49,9 +51,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         #  Calculate the optimal weights using the closed-form solution you derived.
         #  Use only numpy functions. Don't forget regularization!
 
-        w_opt = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        w_opt = np.linalg.inv(X.T @ X + self.reg_lambda * np.eye(X.shape[-1])) @ X.T @ y
         # ========================
 
         self.weights_ = w_opt
@@ -77,7 +78,15 @@ def fit_predict_dataframe(
     """
     # TODO: Implement according to the docstring description.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    if feature_names is None:
+        feature_names = df.columns()
+        feature_names = list(feature_names)
+        feature_names.remove(target_name)
+
+    X = df[feature_names]
+    y = df[target_name]
+    y_pred = model.fit_predict(X, y)
+
     # ========================
     return y_pred
 
@@ -100,7 +109,9 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
         xb = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        ones = np.ones((X.shape[0], 1))
+        xb = np.hstack([ones, X])
+
         # ========================
 
         return xb
@@ -161,10 +172,17 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
     """
 
     # TODO: Calculate correlations with target and sort features by it
-
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
-    # ========================
+    res = []
+    for feature in df.columns:
+        if feature != target_feature:
+            cor = df[feature].corr(df[target_feature])
+            res.append((cor, feature))
+
+    res.sort(key=lambda x: abs(x[0]), reverse=True)
+
+    top_n_features = [item[1] for item in res[:n]]
+    top_n_corr = [item[0] for item in res[:n]]
 
     return top_n_features, top_n_corr
 
@@ -179,7 +197,8 @@ def mse_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement MSE using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+
+    mse =((y - y_pred)**2).sum() / (y.shape[0])
     # ========================
     return mse
 
@@ -194,7 +213,10 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement R^2 using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    numerator = ((y-y_pred)**2).sum()
+    mean = np.mean(y)
+    denumerator = ((y-mean)**2).sum()
+    r2 = 1 - (numerator/denumerator)
     # ========================
     return r2
 
