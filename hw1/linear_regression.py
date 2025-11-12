@@ -8,9 +8,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
-from Part3_LinearRegression import y_pred
-
-
 class LinearRegressor(BaseEstimator, RegressorMixin):
     """
     Implements Linear Regression prediction and closed-form parameter fitting.
@@ -79,7 +76,7 @@ def fit_predict_dataframe(
     # TODO: Implement according to the docstring description.
     # ====== YOUR CODE: ======
     if feature_names is None:
-        feature_names = df.columns()
+        feature_names = df.columns
         feature_names = list(feature_names)
         feature_names.remove(target_name)
 
@@ -128,7 +125,6 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         # TODO: Your custom initialization, if needed
         # Add any hyperparameters you need and save them as above
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
         # ========================
 
     def fit(self, X, y=None):
@@ -148,9 +144,14 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         #  (this class is "Boston-specific"). For example X[:,1] is the second
         #  feature ('ZN').
 
-        X_transformed = None
+
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        X_transformed = X.copy()
+        X_transformed = np.delete(X_transformed, 3, 1)
+        X_transformed[:, 0] = np.log(X_transformed[:, 0])
+        X_transformed[:, -2] = np.log(X_transformed[:, -2])
+        poly = PolynomialFeatures(degree=self.degree)
+        X_transformed = poly.fit_transform(X_transformed)
         # ========================
 
         return X_transformed
@@ -249,7 +250,13 @@ def cv_best_hyperparams(
     #  - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    params = model.get_params()
+    tunable_params = {k: v for k, v in params.items() if k.endswith('degree') or k.endswith('lambda')}
+    tunable_params['bostonfeaturestransformer__degree'] = degree_range
+    tunable_params['linearregressor__reg_lambda'] = lambda_range
+    grid = sklearn.model_selection.GridSearchCV(model, tunable_params, cv=k_folds, scoring='r2')
+    grid.fit(X, y)
+    best_params = grid.best_params_
     # ========================
 
     return best_params
