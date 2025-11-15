@@ -47,9 +47,18 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         # TODO:
         #  Calculate the optimal weights using the closed-form solution you derived.
         #  Use only numpy functions. Don't forget regularization!
+        N = X.shape[0]
+        A = X.T @ X + N * self.reg_lambda * np.eye(X.shape[1])
+        A[0][0] -= N * self.reg_lambda
+        b = X.T @ y
+        w_opt = np.linalg.solve(A, b)
 
         # ====== YOUR CODE: ======
-        w_opt = np.linalg.inv(X.T @ X + self.reg_lambda * np.eye(X.shape[-1])) @ X.T @ y
+
+        #I = np.eye(X.shape[-1])
+        #I[0, 0] = 0
+        #w_opt = np.linalg.inv(X.T @ X + self.reg_lambda * I) @ X.T @ y
+
         # ========================
 
         self.weights_ = w_opt
