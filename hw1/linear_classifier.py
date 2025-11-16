@@ -4,7 +4,7 @@ from torch import Tensor
 from collections import namedtuple
 from torch.utils.data import DataLoader
 
-from .losses import ClassifierLoss
+from .losses import ClassifierLoss, SVMHingeLoss
 
 
 class LinearClassifier(object):
@@ -46,7 +46,7 @@ class LinearClassifier(object):
         y_pred, class_scores = None, None
         # ====== YOUR CODE: ======
         class_scores = x @ self.weights
-        _, y_pred = torch.max(class_scores, dim=1)
+        y_pred, class_scores = torch.argmax(class_scores, dim=1), class_scores
         # ========================
 
         return y_pred, class_scores
@@ -73,13 +73,13 @@ class LinearClassifier(object):
         return acc * 100
 
     def train(
-        self,
-        dl_train: DataLoader,
-        dl_valid: DataLoader,
-        loss_fn: ClassifierLoss,
-        learn_rate=0.1,
-        weight_decay=0.001,
-        max_epochs=100,
+            self,
+            dl_train: DataLoader,
+            dl_valid: DataLoader,
+            loss_fn: ClassifierLoss,
+            learn_rate=0.1,
+            weight_decay=0.001,
+            max_epochs=100,
     ):
 
         Result = namedtuple("Result", "accuracy loss")
@@ -107,7 +107,8 @@ class LinearClassifier(object):
             for X, y in dl_train:
                 y_pred, x_scores = self.predict(X)
                 y = y.view(-1).type_as(y_pred)
-                train_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(torch.square(self.weights))
+                train_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(
+                    torch.square(self.weights))
                 total_loss_train += train_loss * X.shape[0]
                 total_correct_train += y_pred.eq(y).sum().item()
                 gradient = loss_fn.grad() + weight_decay * self.weights
@@ -116,7 +117,8 @@ class LinearClassifier(object):
             for X, y in dl_valid:
                 y_pred, x_scores = self.predict(X)
                 y = y.view(-1).type_as(y_pred)
-                valid_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(torch.square(self.weights))
+                valid_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(
+                    torch.square(self.weights))
                 total_loss_valid += valid_loss * X.shape[0]
                 total_correct_valid += y_pred.eq(y).sum().item()
 
