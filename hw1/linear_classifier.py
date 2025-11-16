@@ -122,10 +122,10 @@ class LinearClassifier(object):
                 total_loss_valid += valid_loss * X.shape[0]
                 total_correct_valid += y_pred.eq(y).sum().item()
 
-            average_loss_train = total_loss_train / len(dl_train)
-            total_accuracy_train = total_correct_train / len(dl_train)
-            average_loss_valid = total_loss_valid / len(dl_valid)
-            total_accuracy_valid = total_correct_valid / len(dl_valid)
+            average_loss_train = total_loss_train / len(dl_train.dataset)
+            total_accuracy_train = total_correct_train / len(dl_train.dataset)
+            average_loss_valid = total_loss_valid / len(dl_valid.dataset)
+            total_accuracy_valid = total_correct_valid / len(dl_valid.dataset)
 
             train_res.loss.append(average_loss_train)
             train_res.accuracy.append(total_accuracy_train)
@@ -169,7 +169,10 @@ def hyperparams():
     #  Manually tune the hyperparameters to get the training accuracy test
     #  to pass.
     # ====== YOUR CODE: ======
-    hp = dict(weight_std=0.1, learn_rate=0.05, weight_decay=0.0001)
-    # ========================
+    hp = dict(
+        weight_std=0.001,
+        learn_rate=8e-3,
+        weight_decay=2e-2
+    )    # ========================
 
     return hp
