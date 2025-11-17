@@ -88,10 +88,11 @@ class LinearClassifier(object):
 
         print("Training", end="")
         for epoch_idx in range(max_epochs):
-            total_correct_train = 0
-            total_correct_valid = 0
-            total_loss_train = 0
-            total_loss_valid = 0
+            average_train_loss = 0
+            average_val_loss = 0
+            average_train_acc = 0
+            average_val_acc = 0
+
             # TODO:
             #  Implement model training loop.
             #  1. At each epoch, evaluate the model on the entire training set
@@ -104,33 +105,45 @@ class LinearClassifier(object):
             #     using the weight_decay parameter.
 
             # ====== YOUR CODE: ======
-            for X, y in dl_train:
-                y_pred, x_scores = self.predict(X)
-                y = y.view(-1).type_as(y_pred)
-                train_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(
-                    torch.square(self.weights))
-                total_loss_train += train_loss * X.shape[0]
-                total_correct_train += y_pred.eq(y).sum().item()
-                gradient = loss_fn.grad() + weight_decay * self.weights
-                self.weights -= learn_rate * gradient
+            # train
+            for x, y in dl_train:
+                y_pre, class_score = self.predict(x)
+                loss_fn.loss(x, y, class_score, y_pre)
+                reg_derivative = weight_decay * self.weights
+                self.weights -= learn_rate * (loss_fn.grad() + reg_derivative)
 
-            for X, y in dl_valid:
-                y_pred, x_scores = self.predict(X)
-                y = y.view(-1).type_as(y_pred)
-                valid_loss = loss_fn.loss(X, y, x_scores, y_pred) + 0.5 * weight_decay * torch.sum(
-                    torch.square(self.weights))
-                total_loss_valid += valid_loss * X.shape[0]
-                total_correct_valid += y_pred.eq(y).sum().item()
+            # evaluate
+            len_dl_train = 0
+            len_dl_valid = 0
 
-            average_loss_train = total_loss_train / len(dl_train.dataset)
-            total_accuracy_train = total_correct_train / len(dl_train.dataset)
-            average_loss_valid = total_loss_valid / len(dl_valid.dataset)
-            total_accuracy_valid = total_correct_valid / len(dl_valid.dataset)
+            for x, y in dl_train:
+                y_pred, class_score = self.predict(x)
+                loss = loss_fn.loss(x, y, class_score, y_pred)
+                reg = (weight_decay / 2) * (self.weights.norm() ** 2)
+                average_train_loss += ((loss + reg) * y.size(0))
+                acc = self.evaluate_accuracy(y, y_pred)
+                average_train_acc += acc * (y.size(0))
+                len_dl_train += y.size(0)
 
-            train_res.loss.append(average_loss_train)
-            train_res.accuracy.append(total_accuracy_train)
-            valid_res.loss.append(average_loss_valid)
-            valid_res.accuracy.append(total_accuracy_valid)
+            for x, y in dl_valid:
+                y_pred, class_score = self.predict(x)
+                loss = loss_fn.loss(x, y, class_score, y_pred)
+                reg = (weight_decay / 2) * (self.weights.norm() ** 2)
+                average_val_loss += ((loss + reg) * y.size(0))
+                acc = self.evaluate_accuracy(y, y_pred)
+                average_val_acc += acc * (y.size(0))
+                len_dl_valid += y.size(0)
+
+            average_val_loss = average_val_loss / len_dl_valid
+            average_val_acc = average_val_acc / len_dl_valid
+            average_train_loss = average_train_loss / len_dl_train
+            average_train_acc = average_train_acc / len_dl_train
+
+            train_res.loss.append(average_train_loss)
+            train_res.accuracy.append(average_train_acc)
+            valid_res.loss.append(average_val_loss)
+            valid_res.accuracy.append(average_val_acc)
+
             # ========================
             print(".", end="")
 
