@@ -107,37 +107,23 @@ class LinearClassifier(object):
             # ====== YOUR CODE: ======
             # train
             for x, y in dl_train:
-                y_pre, class_score = self.predict(x)
-                loss_fn.loss(x, y, class_score, y_pre)
+                y_pred, class_score = self.predict(x)
+                average_train_loss += (loss_fn.loss(x, y, class_score, y_pred)
+                                       + (weight_decay / 2) * (self.weights.norm() ** 2))
+                average_train_acc += self.evaluate_accuracy(y, y_pred)
                 reg_derivative = weight_decay * self.weights
                 self.weights -= learn_rate * (loss_fn.grad() + reg_derivative)
 
-            # evaluate
-            len_dl_train = 0
-            len_dl_valid = 0
-
-            for x, y in dl_train:
-                y_pred, class_score = self.predict(x)
-                loss = loss_fn.loss(x, y, class_score, y_pred)
-                reg = (weight_decay / 2) * (self.weights.norm() ** 2)
-                average_train_loss += ((loss + reg) * y.size(0))
-                acc = self.evaluate_accuracy(y, y_pred)
-                average_train_acc += acc * (y.size(0))
-                len_dl_train += y.size(0)
-
             for x, y in dl_valid:
                 y_pred, class_score = self.predict(x)
-                loss = loss_fn.loss(x, y, class_score, y_pred)
-                reg = (weight_decay / 2) * (self.weights.norm() ** 2)
-                average_val_loss += ((loss + reg) * y.size(0))
-                acc = self.evaluate_accuracy(y, y_pred)
-                average_val_acc += acc * (y.size(0))
-                len_dl_valid += y.size(0)
+                average_val_loss += (loss_fn.loss(x, y, class_score, y_pred)
+                                     + (weight_decay / 2) * (self.weights.norm() ** 2))
+                average_val_acc += self.evaluate_accuracy(y, y_pred)
 
-            average_val_loss = average_val_loss / len_dl_valid
-            average_val_acc = average_val_acc / len_dl_valid
-            average_train_loss = average_train_loss / len_dl_train
-            average_train_acc = average_train_acc / len_dl_train
+            average_val_loss = average_val_loss / len(dl_valid)
+            average_val_acc = average_val_acc / len(dl_valid)
+            average_train_loss = average_train_loss / len(dl_train)
+            average_train_acc = average_train_acc / len(dl_train)
 
             train_res.loss.append(average_train_loss)
             train_res.accuracy.append(average_train_acc)
@@ -165,7 +151,7 @@ class LinearClassifier(object):
 
         # ====== YOUR CODE: ======
         if has_bias:
-            weights = self.weights[1:,:]
+            weights = self.weights[1:, :]
         else:
             weights = self.weights
         n_classes = weights.shape[1]
@@ -186,6 +172,6 @@ def hyperparams():
         weight_std=0.001,
         learn_rate=8e-3,
         weight_decay=2e-2
-    )    # ========================
+    )  # ========================
 
     return hp
