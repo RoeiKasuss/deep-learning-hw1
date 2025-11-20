@@ -91,7 +91,7 @@ def fit_predict_dataframe(
 
     X = df[feature_names]
     y = df[target_name]
-    y_pred = model.fit_predict(X, y)
+    y_pred = model.fit_predict(X.values, y.values)
 
     # ========================
     return y_pred
