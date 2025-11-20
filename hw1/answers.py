@@ -126,9 +126,7 @@ A regression model is linear if it is linear in the weights.
 Even if we define a new feature $\phi(x)$, the prediction remains
 
     $
-    \[
     y = w_0 + w_1 \phi_1(x) + \dots + w_d \phi_d(x),
-    \]
     $
     
     which is linear in the parameters.
