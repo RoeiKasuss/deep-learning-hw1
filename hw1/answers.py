@@ -109,13 +109,13 @@ The gap is stable and small, indicating mild overfitting. In strong overfitting,
 part3_q1 = r"""
 **Your answer:**
 
-The ideal residual plot shows random scatter around 0 with no trend and constant variance — indicating that the linear model captured all systematic structure.
+The best residual plot should look like random points scattered around the horizontal line at 0, with no clear pattern and with roughly the same spread everywhere. This means the linear model is doing a good job.
 
-The model trained on the **top-5 features** shows a much worse fit:  
-its residuals have a wide, heteroscedastic spread and show bias (the model tends to underestimate true values).
+In the top-5-features model, the residuals look much worse. They spread out a lot, their variance changes across the range, and the model often underestimates the true values.
 
-In contrast, the **final model after cross-validation** shows residuals that are far more homoscedastic and tightly clustered around 0.  
-Its generalization is good (training and test scatter similarly), demonstrating that the full feature-selection process significantly reduced bias and improved accuracy.
+In contrast, the final model (after cross-validation) is much better. Its residuals are tighter, more evenly spread, and show no clear pattern. 
+It also generalizes well because the train and test residuals look similar. This shows that using a more complete feature selection process reduced bias and produced a more accurate model.
+
 """
 
 part3_q2 = r"""
@@ -151,66 +151,80 @@ By adding many polynomial terms (high-degree), one can approximate almost any co
 part3_q3 = r"""
 **Your answer:**
 
-We compute:
+**Compute $\mathbb{E}_{x,y}[|y-x|]$ for $x,y \sim U(0,1)$**
 
-$
-\[
-\int |x - t|\,dx.
-\]
-$
+We have:
 
-Split into the two regions $x < t$ and $x > t$.
+$$
+\mathbb{E}[|y-x|] = \int_0^1 \int_0^1 |y-x| \, dy \, dx
+$$
 
-### Case 1: $x < t$
+Split into two cases $y \geq x$ and $y < x$:
 
-$
-\[
-\int (t - x)\,dx
-\]
-$
+$$
+\mathbb{E}[|y-x|] = \int_0^1 \int_0^x (x-y) \, dy \, dx + \int_0^1 \int_x^1 (y-x) \, dy \, dx
+$$
 
-### Case 2: $x > t$
+**First integral ($y < x$):**
 
-$
-\[
-\int (x - t)\,dx
-\]
-$
+$$
+\int_0^1 \int_0^x (x-y) dy dx = \int_0^1 \left[xy - \frac{y^2}{2}\right]_0^x dx = \int_0^1 \frac{x^2}{2} dx = \frac{1}{6}
+$$
 
-**Sum of the two integrals:**  
-(the DOCX text did not include intermediate algebra steps)
+**Second integral ($y \geq x$):**
+
+$$
+\int_0^1 \int_x^1 (y-x) dy dx = \int_0^1 \left[\frac{y^2}{2} - xy\right]_x^1 dx = \int_0^1 \left(\frac{1}{2} - x + \frac{x^2}{2}\right) dx = \frac{1}{6}
+$$
+
+**Sum:**
+
+$$
+\mathbb{E}[| y - x |] = \frac{1}{6} + \frac{1}{6} = \frac{1}{3}
+$$
 
 ---
 
-Next, compute for a fixed $t$:
+**Compute $\mathbb{E}_x[|\hat{x}-x|]$ for fixed $\hat{x}$**
 
-$
-\[
-\int |x - t|\,p(x)\,dx
-\]
-$
+Assume $\hat{x}$ is fixed. Then:
 
-Split again at $x = t$:
+$$
+\mathbb{E}_x[|\hat{x}-x|] = \int_0^1 |\hat{x}-x| dx
+$$
 
-### First integral:
+Split at $x = \hat{x}$:
 
-$
-\[
-\int_{-\infty}^{t} (t - x)\,p(x)\,dx
-\]
-$
+$$
+\int_0^1 |\hat{x}-x| dx = \int_0^{\hat{x}} (\hat{x}-x) dx + \int_{\hat{x}}^1 (x-\hat{x}) dx
+$$
 
-### Second integral:
+**First integral:**
 
-$
-\[
-\int_{t}^{\infty} (x - t)\,p(x)\,dx
-\]
-$
+$$
+\int_0^{\hat{x}} (\hat{x}-x) dx = \left[\hat{x}x - \frac{x^2}{2}\right]_0^{\hat{x}} = \frac{\hat{x}^2}{2}
+$$
 
-The constant term does not depend on $t$.  
-When optimizing to find the best $t$, the constant does not affect the location of the minimum.  
-Therefore, for optimization purposes, we ignore it and focus on the polynomial part.
+**Second integral:**
+
+$$
+\int_{\hat{x}}^1 (x-\hat{x}) dx = \left[\frac{x^2}{2} - \hat{x}x\right]_{\hat{x}}^1 = \frac{1}{2} - \hat{x} + \frac{\hat{x}^2}{2}
+$$
+
+**Sum:**
+
+$$
+\mathbb{E}_x[|\hat{x}-x|] = \hat{x}^2 - \hat{x} + \frac{1}{2}
+$$
+
+---
+
+**Optimization Analysis**
+
+The constant term $\frac{1}{2}$ does not depend on $\hat{x}$.
+
+When optimizing $L_{ED}$ to find the best $\hat{x}$, the constant does not affect the location of the minimum.
+Therefore, for the purpose of optimization, we can ignore it and focus only on the polynomial part.
 """
 
 # ==============
