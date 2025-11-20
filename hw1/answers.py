@@ -84,8 +84,8 @@ For example, the weights for **0** emphasize a closed ring, while the weights fo
 - **Digit 9 → classified as 4:**  
   If the 9 is open at the bottom or the vertical line is short, it resembles a 4.
 
-- **Digit 4 → classified as 9:**  
-  If the center of the 4 is curved or closed, it resembles the upper loop of a 9.
+- **Digit 7 → classified as 9:**  
+  If the 7 has a large hook at the end of it, it resembles a 9.
 """
 
 part2_q3 = r"""
@@ -181,8 +181,6 @@ $$
 \mathbb{E}[| y - x |] = \frac{1}{6} + \frac{1}{6} = \frac{1}{3}
 $$
 
----
-
 **Compute $\mathbb{E}_x[|\hat{x}-x|]$ for fixed $\hat{x}$**
 
 Assume $\hat{x}$ is fixed. Then:
@@ -214,8 +212,6 @@ $$
 $$
 \mathbb{E}_x[|\hat{x}-x|] = \hat{x}^2 - \hat{x} + \frac{1}{2}
 $$
-
----
 
 **Optimization Analysis**
 
